@@ -1,0 +1,110 @@
+import java.io.*;
+import java.util.*;
+
+class Contact implements Serializable {
+    private String name;
+    private String phone;
+    private String email;
+
+    public Contact(String name, String phone, String email) {
+        this.name = name;
+        this.phone = phone;
+        this.email = email;
+    }
+
+    public String getName() { return name; }
+
+    public String toString() {
+        return "Name: " + name + "\nPhone: " + phone + "\nEmail: " + email + "\n";
+    }
+}
+
+public class Main{
+    private static final String FILE_NAME = "contacts.dat";
+    private static List<Contact> contacts = new ArrayList<>();
+
+    public static void main(String[] args) {
+        loadContacts();
+
+        Scanner scanner = new Scanner(System.in);
+        int choice;
+
+        do {
+            System.out.println("\n==== Contact Book ====");
+            System.out.println("1. Add Contact");
+            System.out.println("2. View Contacts");
+            System.out.println("3. Search Contact");
+            System.out.println("4. Exit");
+            System.out.print("Choose an option: ");
+            choice = scanner.nextInt(); scanner.nextLine(); // consume newline
+
+            switch (choice) {
+                case 1 -> addContact(scanner);
+                case 2 -> viewContacts();
+                case 3 -> searchContact(scanner);
+                case 4 -> {
+                    saveContacts();
+                    System.out.println("Exiting. Contacts saved.");
+                }
+                default -> System.out.println("Invalid choice.");
+            }
+        } while (choice != 4);
+    }
+
+    private static void addContact(Scanner scanner) {
+        System.out.print("Enter name: ");
+        String name = scanner.nextLine();
+
+        System.out.print("Enter phone: ");
+        String phone = scanner.nextLine();
+
+        System.out.print("Enter email: ");
+        String email = scanner.nextLine();
+
+        contacts.add(new Contact(name, phone, email));
+        System.out.println("Contact added.");
+    }
+
+    private static void viewContacts() {
+        if (contacts.isEmpty()) {
+            System.out.println("No contacts to display.");
+        } else {
+            for (Contact c : contacts) {
+                System.out.println(c);
+            }
+        }
+    }
+
+    private static void searchContact(Scanner scanner) {
+        System.out.print("Enter name to search: ");
+        String name = scanner.nextLine().toLowerCase();
+        boolean found = false;
+
+        for (Contact c : contacts) {
+            if (c.getName().toLowerCase().contains(name)) {
+                System.out.println(c);
+                found = true;
+            }
+        }
+
+        if (!found) {
+            System.out.println("Contact not found.");
+        }
+    }
+
+    private static void saveContacts() {
+        try (ObjectOutputStream out = new ObjectOutputStream(new FileOutputStream(FILE_NAME))) {
+            out.writeObject(contacts);
+        } catch (IOException e) {
+            System.out.println("Error saving contacts.");
+        }
+    }
+
+    private static void loadContacts() {
+        try (ObjectInputStream in = new ObjectInputStream(new FileInputStream(FILE_NAME))) {
+            contacts = (List<Contact>) in.readObject();
+        } catch (IOException | ClassNotFoundException e) {
+            contacts = new ArrayList<>();
+        }
+    }
+}
